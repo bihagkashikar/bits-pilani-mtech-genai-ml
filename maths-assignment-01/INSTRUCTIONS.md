@@ -46,24 +46,11 @@ solution and verify the general solution. (1/4 × 8 = 2 marks)
 1. Write a Python code to generate the dataset X = [f1, f2, f3, f4, f5, f6]. [0.5]
 2. Write a Python code which computes the rank of X and display the output for the dataset
 X generated in step 1. [0.5]
-3. Numerical Experiment with the Power Method
-Read about the power method for finding the dominant eigenvalue and its corresponding
-eigenvector and perform the following tasks.
-(a) Write a Python code to compute the covariance matrix [0.5]
-C = 1n XTX.
-where n is number of data points
-(b) Implement the Power Method in Python to approximate the largest eigenvalue λ1
-and its corresponding eigenvector v1 of C. Show the code and the outputs. [1]
-(c) Write a Python code to obtain the next largest eigenvalue λ2 and its corresponding
-eigenvector v2 by applying power method on C − v1vT
-1 C. Having found out
-v1, v2, . . . , vk−1, one can find λk and its corresponding eigenvector vk by applying
-power method on C −
-Pk−1
-j=1 vjvT
-J C. Give the code and also display the obtained
-eigenvalues and the corresponding eigenvectors. [1.5]
-(d) Find all the eigenvalues and eigenvectors using Python function and compare with
-the obtained result in (c). [0.5]
-(e) Compare the number of iterations required to get an accuracy of 10−7 using the power
-method. The actual values can be taken as the one obtained in (d). [0.5]2
+3. Numerical Experiment with the Power Method Read about the power method for finding the dominant eigenvalue and its corresponding eigenvector and perform the following tasks.
+    (a) Write a Python code to compute the covariance matrix [0.5]
+        C = 1n XTX. where n is number of data points
+    (b) Implement the Power Method in Python to approximate the largest eigenvalue λ1 and its corresponding      eigenvector v1 of C. Show the code and the outputs. [1]
+    (c) Write a Python code to obtain the next largest eigenvalue λ2 and its corresponding eigenvector v2 by applying power method on C − v1vT 1 C. Having found out v1, v2, . . . , vk−1, one can find λk and its corresponding eigenvector vk by applying power method on C − Pk−1 j=1 vjvT J C. Give the code and also display the obtained eigenvalues and the corresponding eigenvectors. [1.5]
+    (d) Find all the eigenvalues and eigenvectors using Python function and compare with
+    the obtained result in (c). [0.5]
+    (e) Compare the number of iterations required to get an accuracy of 10−7 using the power method. The actual values can be taken as the one obtained in (d). [0.5]2
