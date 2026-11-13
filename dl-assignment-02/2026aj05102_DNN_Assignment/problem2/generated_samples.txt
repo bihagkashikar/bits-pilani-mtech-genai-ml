@@ -1,0 +1,8 @@
+temperature=0.2
+HAIL, fair lord; let the court be still and speak in swift and gentle words.
+
+temperature=0.8
+O, my proud heart, the night is bright with thunder, and all the crowns of men
+
+temperature=1.5
+LORD: By my troth, the stars are witched; I shall go forth and seize the bright

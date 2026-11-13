@@ -1,0 +1,3 @@
+problem,model,seed,seq_len,test_acc,macro_f1,test_mse,params,sec_per_epoch,val_loss_nats,bits_per_char,notes
+P1,RNN,0,128,0.880,0.872,,, , , ,baseline smoke run
+P2,Transformer,0,128,,,,, , ,1.70,1.70,smoke run

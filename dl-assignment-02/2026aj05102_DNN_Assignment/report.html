@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DNN Programming Assignment Report</title>
+  <style>
+    @page { size: A4; margin: 2cm; }
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #536176;
+      --line: #cbd5e1;
+      --accent: #174a72;
+      --pale: #eff6fb;
+      --warn: #fff7df;
+      --warn-line: #d29d18;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0 auto;
+      max-width: 900px;
+      color: var(--ink);
+      font: 11pt/1.35 Arial, Helvetica, sans-serif;
+    }
+    h1 { margin: 0 0 5pt; color: var(--accent); font-size: 24pt; }
+    h2 { margin: 10pt 0 5pt; color: var(--accent); font-size: 15pt; }
+    h3 { margin: 7pt 0 3pt; font-size: 11.5pt; }
+    p { margin: 4pt 0; }
+    ul, ol { margin: 3pt 0 5pt; padding-left: 18pt; }
+    li { margin: 1.5pt 0; }
+    table {
+      width: 100%;
+      margin: 5pt 0;
+      border-collapse: collapse;
+      font-size: 9pt;
+    }
+    th, td { padding: 3pt 4pt; border: 1px solid var(--line); vertical-align: top; }
+    th { background: var(--pale); text-align: left; }
+    .title-meta { color: var(--muted); margin: 7pt 0 12pt; }
+    .notice {
+      padding: 7pt 9pt;
+      margin: 8pt 0;
+      border: 1px solid var(--warn-line);
+      background: var(--warn);
+      font-size: 9.5pt;
+    }
+    .small { color: var(--muted); font-size: 9pt; }
+    .equation {
+      margin: 5pt 0;
+      padding: 5pt 8pt;
+      border-left: 3px solid var(--accent);
+      background: #f7fafc;
+      font-family: "DejaVu Sans Mono", monospace;
+      font-size: 9pt;
+    }
+    .figure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5pt; }
+    figure { margin: 5pt 0; break-inside: avoid; }
+    .plot-placeholder {
+      min-height: 55pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5pt;
+      border: 1px dashed #8293a8;
+      background: #f8fafc;
+      color: var(--muted);
+      text-align: center;
+      font-size: 9pt;
+    }
+    figcaption { margin-top: 2pt; font-size: 8.5pt; }
+    .page { position: relative; }
+    .page + .page { break-before: page; page-break-before: always; }
+    .page-number {
+      margin-top: 7pt;
+      color: var(--muted);
+      text-align: right;
+      font-size: 8pt;
+    }
+    .appendix { break-before: page; page-break-before: always; }
+    .tag { color: #8a5700; font-weight: bold; }
+    @media print {
+      body { max-width: none; }
+      a { color: inherit; text-decoration: none; }
+      .plot-placeholder { print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <h1>DNN Programming Assignment</h1>
+    <p class="title-meta">Recurrent networks and a Transformer implemented in PyTorch</p>
+    <p><strong>Student:</strong> [Enter name] &nbsp; <strong>Student ID:</strong> 2026AJ05102 (confirm)</p>
+    <p><strong>Environment:</strong> Python 3.12.10, PyTorch 2.3.1+cpu; [record exact versions and device used for experiments].</p>
+
+    <div class="notice">
+      <strong>Draft report — results still required.</strong>
+      The notebooks currently contain component smoke tests, not the full assignment experiments. Do not submit this HTML until every bracketed value/figure is replaced with results from completed runs. The current <code>results.csv</code> and generated-sample file contain scaffold values; they are not experimental evidence and are intentionally not quoted here.
+    </div>
+
+    <h2>1. Problem 1: recurrent models</h2>
+    <h3>1.1 Data and experimental setup</h3>
+    <p>UCI HAR provides 128-step, 9-channel sensor windows and six activity classes. The supplied training split has 21 subjects and the official test split has 9 disjoint subjects. For each of three seeds, four training subjects are held out for validation; per-channel normalization statistics are computed using the training portion only. The adding problem uses two channels (random value and marker), with exactly two marked values and their sum as the target.</p>
+    <p>Adding-problem data: 10,000 training sequences (seed 0), 1,000 validation (seed 1), and 1,000 test (seed 2) for each length T ∈ {50, 100, 200, 400}. HAR classifier comparisons use a shared hidden size, Adam (learning rate 0.001), batch size, epoch budget, and three seeds.</p>
+    <figure>
+      <div class="plot-placeholder">Insert the six-class training-split class-balance plot</div>
+      <figcaption>Figure 1. HAR class balance in the training split. [Explain the class counts briefly.]</figcaption>
+    </figure>
+
+    <h3>1.2 Cell verification and parameter counts</h3>
+    <p>The custom cells were checked against PyTorch cell references on a random batch. The current notebook check gives maximum absolute differences of 0.0 (RNN), 0.0 (LSTM), and 2.38 × 10<sup>−7</sup> (GRU). These are cell-level checks; include the required sequence-layer verification in the final notebook/report if performed.</p>
+    <table>
+      <thead><tr><th>Cell (d=9, h=64)</th><th>Custom count</th><th>PyTorch count</th><th>Max absolute difference</th></tr></thead>
+      <tbody>
+        <tr><td>RNN</td><td>4,736</td><td>4,800</td><td>0.0</td></tr>
+        <tr><td>LSTM</td><td>18,944</td><td>19,200</td><td>0.0</td></tr>
+        <tr><td>GRU</td><td>14,208</td><td>14,400</td><td>2.38 × 10<sup>−7</sup></td></tr>
+      </tbody>
+    </table>
+    <p>The custom count uses one bias vector per gate; PyTorch stores input-hidden and hidden-hidden bias vectors, adding h parameters per gate. Show the derivation and the final measured parameter counts in the submitted report.</p>
+    <div class="page-number">Page 1 of 6</div>
+  </section>
+
+  <section class="page">
+    <h2>1.3 HAR classification and adding problem</h2>
+    <h3>HAR results</h3>
+    <p>Report test performance aggregated over three seeds as mean ± sample standard deviation. All models must use the same training budget.</p>
+    <table>
+      <thead><tr><th>Model</th><th>Test accuracy (mean ± std)</th><th>Macro-F1 (mean ± std)</th><th>Parameters</th><th>Seconds/epoch</th></tr></thead>
+      <tbody>
+        <tr><td>RNN</td><td>[fill]</td><td>[fill]</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>LSTM</td><td>[fill]</td><td>[fill]</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>GRU</td><td>[fill]</td><td>[fill]</td><td>[fill]</td><td>[fill]</td></tr>
+      </tbody>
+    </table>
+    <figure>
+      <div class="plot-placeholder">Insert the best model's 6 × 6 test confusion matrix</div>
+      <figcaption>Figure 2. Confusion matrix for [best model], evaluated on the official HAR test subjects.</figcaption>
+    </figure>
+
+    <h3>Adding-problem results</h3>
+    <p>The constant-prediction MSE reference is approximately 0.167. A run is counted as solved when test MSE &lt; 0.05.</p>
+    <table>
+      <thead><tr><th>Model</th><th>T=50 MSE</th><th>T=100 MSE</th><th>T=200 MSE</th><th>T=400 MSE</th></tr></thead>
+      <tbody>
+        <tr><td>RNN</td><td>[mean ± std]</td><td>[mean ± std]</td><td>[mean ± std]</td><td>[mean ± std]</td></tr>
+        <tr><td>LSTM</td><td>[mean ± std]</td><td>[mean ± std]</td><td>[mean ± std]</td><td>[mean ± std]</td></tr>
+        <tr><td>GRU</td><td>[mean ± std]</td><td>[mean ± std]</td><td>[mean ± std]</td><td>[mean ± std]</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Solved runs out of 3:</strong> [add a 3 × 4 table or annotate the table above with counts].</p>
+    <div class="figure-grid">
+      <figure><div class="plot-placeholder">Insert training/validation learning curves at T=200</div><figcaption>Figure 3. Adding-problem learning curves at T=200.</figcaption></figure>
+      <figure><div class="plot-placeholder">Insert test MSE versus sequence length, with baseline</div><figcaption>Figure 4. Test MSE against T; dashed reference is MSE ≈ 0.167.</figcaption></figure>
+    </div>
+    <div class="page-number">Page 2 of 6</div>
+  </section>
+
+  <section class="page">
+    <h2>1.4 Gradients, ablation, and analysis</h2>
+    <figure>
+      <div class="plot-placeholder">Insert log-scale ‖∂L/∂h_t‖ curves at T=100, before and after training, for all three models</div>
+      <figcaption>Figure 5. Hidden-state gradient norms by time step at T=100. [State the loss used and explain how before/after were measured.]</figcaption>
+    </figure>
+    <figure>
+      <div class="plot-placeholder">Insert HAR test metric versus hidden size for LSTM and GRU</div>
+      <figcaption>Figure 6. Hidden-size sweep {16, 32, 64, 128} on HAR. [Include parameter counts or report them in an adjacent table.]</figcaption>
+    </figure>
+    <p><strong>Individual ablation:</strong> The assignment folder ID ends in 2; if this is the student's ID, use the even-ID variant: vanilla RNN gradient clipping (norm 1.0 versus none) on the adding problem at T=200. Replace this with the applicable variant if the ID differs.</p>
+    <figure>
+      <div class="plot-placeholder">Insert the T=200 individual ablation comparison</div>
+      <figcaption>Figure 7. [Ablation name], comparing [settings] over three seeds.</figcaption>
+    </figure>
+    <h3>Analysis (complete using the measured results)</h3>
+    <p><span class="tag">[Replace prompts with evidence-based conclusions.]</span> The gradient plot indicates [whether/where gradients decay or remain stable]. As T increases, [describe each model's failure or success using Figure 4 and the adding-problem table]. On HAR, [compare accuracy/F1 against parameter count and time]. For a battery-powered wearable, I recommend [model] because [cite measured accuracy, parameter count, and runtime]. The individual ablation changes [metric/gradient behavior] by [measured amount], suggesting [interpretation].</p>
+    <div class="page-number">Page 3 of 6</div>
+  </section>
+
+  <section class="page">
+    <h2>2. Problem 2: Transformer from scratch</h2>
+    <h3>2.1 Attention and encoder-block checks</h3>
+    <p>Scaled dot-product attention is computed from Q, K, and V with optional masking. The notebook's smoke checks passed for row-normalized attention, agreement with PyTorch's functional scaled-dot-product attention, and zero future-position weights under a causal mask. The encoder-block smoke check produced the expected input/output shape. Include the instructor's 3-token hand calculation and its code result here.</p>
+    <p>For one block with d=128 and d<sub>ff</sub>=512, the weight-only count is:</p>
+    <div class="equation">4d² + 2dd<sub>ff</sub> = 4(128²) + 2(128)(512) = 196,608 weights.</div>
+    <p>Reconcile this with the implementation's <code>sum(p.numel())</code>, accounting for projection/feed-forward biases and the two LayerNorm scale/bias pairs.</p>
+    <table>
+      <thead><tr><th>Check</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Attention output vs. functional reference (atol=rtol=1e−5)</td><td>Passed in current smoke test</td></tr>
+        <tr><td>Attention row sums and causal future weights</td><td>Passed in current smoke test</td></tr>
+        <tr><td>Encoder block shape check</td><td>Passed: (2, 4, 8) input/output</td></tr>
+        <tr><td>Full block parameter reconciliation</td><td>[fill from final implementation]</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2.2 Task A: HAR encoder classifier</h3>
+    <p>Reuse the Problem 1 HAR split and preprocessing. Compare the encoder to the best recurrent model and report the positional-information ablation.</p>
+    <table>
+      <thead><tr><th>Model / positional setting</th><th>Test accuracy</th><th>Macro-F1</th><th>Parameters</th><th>Seconds/epoch</th></tr></thead>
+      <tbody>
+        <tr><td>Best Problem 1 model</td><td>[fill]</td><td>[fill]</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>Encoder: none</td><td>[fill]</td><td>[fill]</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>Encoder: sinusoidal</td><td>[fill]</td><td>[fill]</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>Encoder: learned</td><td>[fill]</td><td>[fill]</td><td>[fill]</td><td>[fill]</td></tr>
+      </tbody>
+    </table>
+    <p>Interpret the effect of positional information and whether the comparison is fair in data, seeds, and training budget.</p>
+    <div class="page-number">Page 4 of 6</div>
+  </section>
+
+  <section class="page">
+    <h2>2.3 Task B: character-level language model</h2>
+    <p>Tiny Shakespeare is split in source order: first 90% for training, final 10% for validation, with vocabulary constructed from the full text. The specified model uses context 128, d=128, four heads, and four layers. If run without a GPU, document the FAQ fallback (d=64, two layers) and the device used.</p>
+    <table>
+      <thead><tr><th>Configuration</th><th>Validation loss (nats)</th><th>Bits/character</th><th>Context / d / heads / layers</th></tr></thead>
+      <tbody><tr><td>[fill]</td><td>[fill]</td><td>[loss ÷ ln 2]</td><td>[fill]</td></tr></tbody>
+    </table>
+    <figure>
+      <div class="plot-placeholder">Insert train and validation loss against training step/epoch</div>
+      <figcaption>Figure 8. Tiny Shakespeare learning curves. [Describe convergence and final validation metrics.]</figcaption>
+    </figure>
+    <p>Discuss generated-text differences at temperatures 0.2, 0.8, and 1.5 with top-k sampling. The three complete, model-generated 500-character samples belong in <code>generated_samples.txt</code>, labelled by temperature; quote only short excerpts here if needed.</p>
+
+    <h3>Attention interpretation</h3>
+    <div class="figure-grid">
+      <figure><div class="plot-placeholder">Insert first attention-head heatmap for one sentence</div><figcaption>Figure 9. Attention heatmap for layer [ ], head [ ].</figcaption></figure>
+      <figure><div class="plot-placeholder">Insert second attention-head heatmap for the same sentence</div><figcaption>Figure 10. Attention heatmap for layer [ ], head [ ].</figcaption></figure>
+    </div>
+    <p>Interpret the visible token-to-token patterns; avoid assigning linguistic meaning unsupported by the heatmaps.</p>
+    <div class="page-number">Page 5 of 6</div>
+  </section>
+
+  <section class="page">
+    <h2>2.4 Ablations and scaling</h2>
+    <h3>Head-count and causal-mask ablations</h3>
+    <table>
+      <thead><tr><th>Setting</th><th>Validation loss</th><th>Generation observation</th></tr></thead>
+      <tbody>
+        <tr><td>Heads = 1</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>Heads = 4</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>Heads = 8</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>Causal mask removed</td><td>[fill]</td><td>[describe leakage/invalid generation effect]</td></tr>
+      </tbody>
+    </table>
+    <div class="figure-grid">
+      <figure><div class="plot-placeholder">Insert validation result by number of heads</div><figcaption>Figure 11. Head-count ablation at fixed d.</figcaption></figure>
+      <figure><div class="plot-placeholder">Insert masked versus unmasked loss and/or generation comparison</div><figcaption>Figure 12. Effect of removing the causal mask.</figcaption></figure>
+    </div>
+
+    <h3>Context-length scaling</h3>
+    <table>
+      <thead><tr><th>Context length</th><th>Time [units]</th><th>Peak memory [units]</th></tr></thead>
+      <tbody>
+        <tr><td>64</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>128</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>256</td><td>[fill]</td><td>[fill]</td></tr>
+        <tr><td>512</td><td>[fill]</td><td>[fill]</td></tr>
+      </tbody>
+    </table>
+    <figure>
+      <div class="plot-placeholder">Insert measured time and memory versus context length</div>
+      <figcaption>Figure 13. Runtime and peak memory as context grows; relate the trend to O(n²·d).</figcaption>
+    </figure>
+    <h3>Conclusion</h3>
+    <p><span class="tag">[Complete after experiments.]</span> Summarize which recurrent and Transformer design choices mattered most, the limitations of these runs, and the evidence supporting your conclusions.</p>
+    <div class="page-number">Page 6 of 6</div>
+  </section>
+
+  <section class="appendix">
+    <h2>AI-use statement</h2>
+    <p>AI assistance was used to organize this report template and help debug implementation and environment setup. Experimental results, plots, interpretations, and final claims must be generated and checked by the student; no unrun experiment results are presented as findings in this draft.</p>
+
+    <h2>References</h2>
+    <ol>
+      <li>UCI Machine Learning Repository, <em>Human Activity Recognition Using Smartphones</em>, dataset 240. <a href="https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones">https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones</a>.</li>
+      <li>Andrej Karpathy, <em>tiny_shakespeare</em> dataset. <a href="https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt">https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt</a>.</li>
+      <li>PyTorch documentation, <em>Scaled Dot Product Attention</em>. <a href="https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html">https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html</a>.</li>
+      <li>Assignment specification and dataset instructions: <a href="../assignment.md">assignment.md</a> and <a href="../dataset_info.md">dataset_info.md</a>.</li>
+    </ol>
+    <p class="small">This appendix is outside the six-page report limit. Keep all report figures and tables numbered, captioned, and referenced in the text.</p>
+  </section>
+</body>
+</html>
